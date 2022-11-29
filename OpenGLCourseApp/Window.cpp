@@ -3,11 +3,21 @@
 Window::Window() {
 	width = 800;
 	height = 600;
+	xChange = 0.0f;
+	yChange = 0.0f;
+
+	for (size_t i = 0; i < 1024; i++) {
+		keys[i] = 0;
+	}
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight) {
 	width = windowWidth;
 	height = windowHeight;
+
+	for (size_t i = 0; i < 1024; i++) {
+		keys[i] = 0;
+	}
 }
 
 int Window::initialise() {
@@ -41,6 +51,11 @@ int Window::initialise() {
 	// Set Context for GLEW to use
 	glfwMakeContextCurrent(mainWindow);
 	//allow modern externsion features
+
+	//Handle key + mouse input
+	createCallBacks();
+	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	glewExperimental = GL_TRUE;
 
 	GLenum error = glewInit();
@@ -56,6 +71,63 @@ int Window::initialise() {
 	// Setup Viewport Size
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
+	glfwSetWindowUserPointer(mainWindow,this);
+
+}
+
+GLfloat Window::getXchange() {
+	GLfloat theChange = xChange;
+	xChange = 0.0f;
+	return theChange;
+}
+
+GLfloat Window::getYchange() {
+	GLfloat theChange = yChange;
+	yChange = 0.0f;
+	return theChange;
+}
+
+void Window::createCallBacks() {
+	glfwSetKeyCallback(mainWindow, handleKeys);
+	glfwSetCursorPosCallback(mainWindow, handleMouse);
+}
+
+void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode) {
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, GL_TRUE);
+		//glfwSetInputMode(theWindow->mainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	if (key >= 0 && key < 1024) {
+		if (action == GLFW_PRESS) {
+			theWindow->keys[key] = true;
+			printf("pressed: %d\n", key);
+		}
+		else if (action == GLFW_RELEASE) {
+			theWindow->keys[key] = false;
+			printf("released: %d\n", key);
+		}
+	}
+
+}
+
+void Window::handleMouse(GLFWwindow* window, double xPos, double yPos) {
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (theWindow->mouseFirstMoved) {
+		theWindow->lastX = xPos;
+		theWindow->lastY = yPos;
+		theWindow->mouseFirstMoved = false;
+	}
+	theWindow->xChange = xPos - theWindow->lastX;
+	theWindow->yChange = theWindow->lastY - yPos;
+
+	theWindow->lastX = xPos;
+	theWindow->lastY = yPos;
+
+	//printf("x:%.6f, y:%.6f\n", theWindow->xChange, theWindow->yChange);
+	
 }
 
 Window::~Window() {

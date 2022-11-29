@@ -16,6 +16,7 @@
 
 
 #include "Window.h"
+#include "Camera.h"
 // Window Dimensions
 const float toRadians = 3.1459265f / 180.0f;
 
@@ -24,6 +25,11 @@ std::vector<Shader> shaderList;
 
 
 Window mainWindow;
+Camera camera;
+
+// changing in time
+GLfloat deltaTime;
+GLfloat lastTime;
 // Vertext Shader
 static const char* vShader = "Shaders/shader.vert";
 //Fragment Shader
@@ -67,16 +73,25 @@ int main()
 	CreateObject();
 	CreateShaders();
 
-	GLuint uniformProjection = 0, uniformModel = 0;
+	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,1.0f,0.0f),-90.0f,0.0f, 5.0f, 0.5f);
+
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.getBufferWidth()/mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 
 	// Loop until window closed;
 	while (!mainWindow.getShouldClose()) {
 		// Get + handle user input events
+		GLfloat now = glfwGetTime(); // SDL GetPerformanceCounter();
+		deltaTime = now - lastTime; // (now - lasTime) *10000/ SDL_GetPerformanceOfFreuqency()
+		lastTime = now;
+
 		glfwPollEvents();
 
-
+		// checking camera input
+		camera.keyControl(mainWindow.getsKeys(), deltaTime);
+		// mose control system.
+		camera.mouseControl(mainWindow.getXchange(), mainWindow.getYchange());
 		// clear window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -84,13 +99,14 @@ int main()
 		shaderList[0].UseShader();
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
-
+		uniformView = shaderList[0].GetViewLocation();
 		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
 		//model = glm::rotate(model, (curAngle * toRadians), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
