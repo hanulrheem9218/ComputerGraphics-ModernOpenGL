@@ -37,7 +37,7 @@ int Window::initialise() {
 	// Allow Forward Comaptibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
- mainWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+ mainWindow = glfwCreateWindow(width, height, "The Chad Matrix", NULL, NULL);
 	if (!mainWindow) {
 		printf("GLFW window creation Failed");
 		glfwTerminate();
