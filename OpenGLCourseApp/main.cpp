@@ -17,11 +17,13 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+#include "CommonValues.h"
 
 #include "Window.h"
 #include "Camera.h"
 #include "Texture.h"
 #include "DirectionalLight.h"
+#include "PointLight.h"
 #include "Material.h"
 
 // Window Dimensions
@@ -39,10 +41,11 @@ Texture dirtTexture;
 Material shinyMaterial;
 Material dullMaterial;
 DirectionalLight mainLight;
+PointLight pointLights[MAX_POINT_LIGHTS];
 
 // changing in time
-GLfloat deltaTime;
-GLfloat lastTime;
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
 // Vertext Shader
 static const char* vShader = "Shaders/shader.vert";
 //Fragment Shader
@@ -144,8 +147,23 @@ int main()
 		,0.1f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 
+	unsigned int pointLightCount = 0;
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformAmbientIntensity = 0, uniformAmbientColour = 0, uniformDirection = 0, uniformDiffuseIntensity = 0,
+	pointLights[0] = PointLight(0.0f, 1.0f, 0.0f,
+		0.1f, 1.0f,
+		4.0f, 0.0f, 0.0f,
+		0.3f, 0.2f, 0.1f);
+
+	pointLightCount++;
+
+	pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
+		0.1f, 1.0f,
+		-4.0f, 2.0f, 0.0f,
+		0.3f, 0.1f, 0.1f);
+
+	pointLightCount++;
+
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, 
 		uniformEyePosition = 0, uniformSpecularIntensity = 0, uniformShininess = 0;
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.getBufferWidth()/mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
@@ -171,15 +189,18 @@ int main()
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
 		uniformView = shaderList[0].GetViewLocation();
-		uniformAmbientColour = shaderList[0].GetAmbientColourLocation();
-		uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
-		uniformDirection = shaderList[0].GetDirectionLocation();
-		uniformDiffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
+		//uniformAmbientColour = shaderList[0].GetAmbientColourLocation();
+		//uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
+		//uniformDirection = shaderList[0].GetDirectionLocation();
+		//uniformDiffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
-		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
+		shaderList[0].SetDirectionalLight(&mainLight);
+		shaderList[0].SetPointLights(pointLights, pointLightCount);
+
+		//mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
 
 
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
