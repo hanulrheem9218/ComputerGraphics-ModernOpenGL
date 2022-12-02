@@ -17,6 +17,8 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 void Camera::keyControl(bool* keys, GLfloat deltaTime) {
 	
 	GLfloat velocity = moveSpeed * deltaTime;
+	bool shiftKey = keys[GLFW_KEY_LEFT_SHIFT];
+	GLfloat accerlation = 2;
 	
 	if (keys[GLFW_KEY_W]) {
 		position += front * velocity;
@@ -31,6 +33,20 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime) {
 	if (keys[GLFW_KEY_D]) {
 		position += right * velocity;
 	}
+	// shift keys
+	if (keys[GLFW_KEY_W] && shiftKey) {
+		position += front * velocity * accerlation;
+	}
+	if (keys[GLFW_KEY_S] && shiftKey) {
+		position -= front * velocity * accerlation;
+	}
+	if (keys[GLFW_KEY_A] && shiftKey) {
+		position -= right * velocity * accerlation;
+	}
+	if (keys[GLFW_KEY_D] && shiftKey) {
+		position += right * velocity * accerlation;
+	}
+
 }
 
 void Camera::mouseControl(GLfloat xChange, GLfloat yChange) {

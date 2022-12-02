@@ -7,6 +7,8 @@
 #include <fstream>
 
 #include <GL\glew.h>
+#include "DirectionalLight.h"
+#include "PointLight.h"
 class Shader
 {
 public: 
